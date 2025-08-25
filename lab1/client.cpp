@@ -10,8 +10,6 @@
 
 using namespace std;
 
-#define PORT "5080"
-
 int udp_conv(int server_port, const char *server_ip)
 {
     int udp_sock = socket(AF_INET, SOCK_DGRAM, 0);
@@ -30,7 +28,7 @@ int udp_conv(int server_port, const char *server_ip)
     msg.set(msg_type::TYPE_3, "Hello from UDP client!");
     char buf[MSG_LEN];
     int n = msg.printToBuf(buf, sizeof buf);
-    cout<<"msg"<<msg.length<<msg.message<<"\n";
+    cout<<"sending : "<<msg.print(false)<<"\n";
     ssize_t sent = sendto(udp_sock, buf, n, 0,
                           (sockaddr *)&server_addr, sizeof(server_addr));
     if (sent < 0)
@@ -55,7 +53,7 @@ int udp_conv(int server_port, const char *server_ip)
     close(udp_sock);
     return 0;
 }
-int tcp_handshake()
+int tcp_handshake(const char*server_ip,int PORT)
 {
     int sockfd, rv;
     struct addrinfo hints{}, *servinfo, *p;
@@ -66,7 +64,7 @@ int tcp_handshake()
     hints.ai_socktype = SOCK_STREAM; // TCP
 
     // Resolve localhost:5080
-    if ((rv = getaddrinfo("127.0.0.1", PORT, &hints, &servinfo)) != 0)
+    if ((rv = getaddrinfo(server_ip, to_string(PORT).c_str(), &hints, &servinfo)) != 0)
     {
         cerr << "getaddrinfo: " << gai_strerror(rv) << endl;
         return 1;
@@ -107,11 +105,28 @@ int tcp_handshake()
     close(sockfd);
     return rv;
 }
-int main()
-{
-    int port = tcp_handshake();
-    sleep(1);
-    udp_conv(port, "localhost");
+
+int main(int argc, char **argv) {
+    if (argc < 3) {
+        std::cerr << "Usage: " << argv[0] << " <server_ip> <server_port>\n";
+        return 1;
+    }
+
+    const char *server_ip = argv[1];
+    int server_port = std::stoi(argv[2]);
+
+    // Phase 1: TCP handshake (returns the negotiated UDP port)
+    int udp_port = tcp_handshake(server_ip, server_port);
+
+    if (udp_port <= 0) {
+        std::cerr << "Handshake failed\n";
+        return 1;
+    }
+
+    sleep(1); // give server a moment (optional)
+
+    // Phase 2: UDP conversation
+    udp_conv(udp_port, server_ip);
 
     return 0;
 }

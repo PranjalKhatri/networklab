@@ -10,7 +10,6 @@
 #include <mutex>
 using namespace std;
 
-#define PORT "5080"
 #define BACKLOGS 10
 
 struct ClientInfo
@@ -146,6 +145,7 @@ void fcfs()
 
             lock.lock();
             clients[cur].state = ClientInfo::State::DONE;
+            ts_print(clients[cur].msg.print(false),"\n");
             ++cur;
         }
         else
@@ -156,7 +156,7 @@ void fcfs()
     }
 }
 
-void tcp_server()
+void tcp_server(const char* PORT)
 {
     int sockfd, new_fd;
     addrinfo hints{}, *servinfo{}, *ptr{};
@@ -243,10 +243,14 @@ void tcp_server()
     }
 }
 
-int main()
+int main(int argc,char**argv)
 {
+    if(argc != 2){
+        cerr<<"USAGE: .\\server [PORT]\n";
+        return 1;
+    }
     // thread udp_thread(udp_server);
-    thread tcp_thread(tcp_server);
+    thread tcp_thread(tcp_server,argv[1]);
     thread fcfs_thread(fcfs);
     // udp_thread.join();
     fcfs_thread.join();
