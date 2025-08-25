@@ -49,7 +49,7 @@ int udp_conv(int server_port, const char *server_ip)
     if (n >= 0)
     {
         msg.parseFromBuf(buf,n);
-        cout << "Received: " << buf << endl;
+        cout << "Received: " << msg.print(false) << endl;
     }
 
     close(udp_sock);

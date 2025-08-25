@@ -15,17 +15,26 @@ using namespace std;
 
 struct ClientInfo
 {
+    enum class State
+    {
+        NOT_ARRIVED,
+        ARRIVED,
+        DONE
+    };
+    uint16_t socket;
     std::string ip; // client IP address
     uint16_t port;  // client UDP port
     message msg;    // the Type 3 message payload
-    bool done;      // has the job finished?
+    State state = ClientInfo::State::NOT_ARRIVED;
+    sockaddr_in addr;
+    socklen_t addrlen;
 };
 
 vector<ClientInfo> clients;
 mutex clients_mtx;
 
 std::mutex print_mutex;
-
+string ack_msg = "ACK FROM SERVER!!";
 template <typename... Args>
 void ts_print(Args &&...args)
 {
@@ -43,30 +52,30 @@ void *get_in_addr(sockaddr *sa)
     return &(((sockaddr_in6 *)sa)->sin6_addr);
 }
 
-int16_t UDP_PORT = 9080;
+uint16_t UDP_PORT = 9080;
 
-void udp_server()
+int udp_for_client(std::string ip, uint16_t udp_port)
 {
     int udp_sock = socket(AF_INET, SOCK_DGRAM, 0);
     if (udp_sock < 0)
     {
-        ts_print("[UDP] Socket creation failed!\n");
-        return;
+        ts_print("[UDP] Socket creation failed for client ", ip, "\n");
+        return -1;
     }
 
     sockaddr_in server_addr{};
     server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(UDP_PORT);
+    server_addr.sin_port = htons(udp_port);
     server_addr.sin_addr.s_addr = INADDR_ANY;
 
     if (bind(udp_sock, (sockaddr *)&server_addr, sizeof(server_addr)) < 0)
     {
-        ts_print("[UDP] bind failed\n");
+        ts_print("[UDP] bind failed on port ", udp_port, "\n");
         close(udp_sock);
-        return;
+        return -1;
     }
 
-    ts_print("[UDP] Listening on ", UDP_PORT, "\n");
+    ts_print("[UDP] Dedicated UDP server for ", ip, " on port ", udp_port, "\n");
 
     char buf[1024];
     while (true)
@@ -77,43 +86,72 @@ void udp_server()
                              (sockaddr *)&client_addr, &addrlen);
         if (n < 0)
         {
-            ts_print("[UDP] recvfrom error\n");
+            ts_print("[UDP] recvfrom error for ", ip, "\n");
             continue;
         }
-        buf[n] = '\0';
+
         message msg{};
         msg.parseFromBuf(buf, n);
 
-        char ipstr[INET_ADDRSTRLEN];
-        inet_ntop(AF_INET, &client_addr.sin_addr, ipstr, sizeof(ipstr));
-        int cport = ntohs(client_addr.sin_port);
-        ts_print("udp connection from ", ipstr, "\n");
-
         {
-            lock_guard<mutex> lock(clients_mtx);
-            bool known = false;
-            for (auto &c : clients)
+            std::lock_guard<std::mutex> lock(clients_mtx);
+            for (auto &i : clients)
             {
-                // ts_print("comparing ", ipstr, " ", c.ip, "\n");
-                if (c.ip == ipstr)
+                if (i.ip == ip && i.state == ClientInfo::State::NOT_ARRIVED)
                 {
-                    c.port = cport; // update UDP port
-                    known = true;
-                    c.msg.parseFromBuf(buf, n);
-                    c.done = true;
-                    break;
+                    i.msg = msg;
+                    i.port = ntohs(client_addr.sin_port);
+                    i.addr = client_addr;
+                    i.addrlen = addrlen;
+                    i.socket = udp_sock; // set FD before ARRIVED
+                    i.state = ClientInfo::State::ARRIVED;
+                    return 0; // do NOT close udp_sock here, FCFS will
                 }
             }
-            if (!known)
-            {
-                ts_print("[UDP] Got packet from unknown client ", ipstr, ":", cport, " ", msg.print(false), "\n");
-            }
-            else
-            {
-                ts_print("[UDP] Got packet from client ", ipstr, ":", cport, " ", msg.print(false), "\n");
-                msg.set(msg_type::TYPE_4, "Hi from udp server!\n");
-                sendto(udp_sock, buf, sizeof(buf), 0, (sockaddr *)&client_addr, addrlen);
-            }
+        }
+        ts_print("No client for ip ", ip);
+        return -1;
+    }
+}
+
+int udp_send_and_close(int udp_sock, const std::string& ack_msg,
+                       const sockaddr_in& client_addr, socklen_t addrlen) {
+    message ack{};
+    ack.set(msg_type::TYPE_4, ack_msg.c_str());      // <-- pass c_str + size
+    char buf[sizeof(int32_t)*2 + MSG_LEN];
+    int n = ack.printToBuf(buf, sizeof(buf));
+    if (n < 0) return -1;
+
+    ssize_t sent = sendto(udp_sock, buf, n, 0,
+                          (const sockaddr*)&client_addr, addrlen);
+    if (sent < 0) { perror("sendto failed"); return -1; }
+
+    close(udp_sock);
+    return 0;
+}
+
+
+void fcfs()
+{
+    size_t cur = 0;
+    for (;;)
+    {
+        std::unique_lock<std::mutex> lock(clients_mtx);
+        if (cur < clients.size() && clients[cur].state == ClientInfo::State::ARRIVED)
+        {
+            auto cli = clients[cur]; // copy the info you need
+            lock.unlock();           // release lock while sending
+
+            udp_send_and_close(cli.socket, ack_msg, cli.addr, cli.addrlen);
+
+            lock.lock();
+            clients[cur].state = ClientInfo::State::DONE;
+            ++cur;
+        }
+        else
+        {
+            lock.unlock();
+            std::this_thread::sleep_for(std::chrono::milliseconds(10)); // tiny backoff
         }
     }
 }
@@ -193,7 +231,12 @@ void tcp_server()
                     {
                         lock_guard<mutex> lock(clients_mtx);
                         // ts_print("pushing\n");
-                        clients.push_back({s, 0, {}, false});
+                        clients.push_back(ClientInfo{0,std::string(s), 0, message{}, ClientInfo::State::NOT_ARRIVED});
+
+                        thread client_thread([s, port=UDP_PORT++]() {
+                            udp_for_client(std::string(s), port);
+                        });
+                        client_thread.detach();
                     }
                     close(new_fd); })
             .detach();
@@ -202,9 +245,10 @@ void tcp_server()
 
 int main()
 {
-    thread udp_thread(udp_server);
+    // thread udp_thread(udp_server);
     thread tcp_thread(tcp_server);
-
-    udp_thread.join();
+    thread fcfs_thread(fcfs);
+    // udp_thread.join();
+    fcfs_thread.join();
     tcp_thread.join();
 }
