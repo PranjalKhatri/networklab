@@ -16,6 +16,7 @@ struct ClientInfo
 {
     enum class State
     {
+        INVALID,
         NOT_ARRIVED,
         ARRIVED,
         DONE
@@ -103,7 +104,13 @@ int udp_for_client(std::string ip, uint16_t udp_port)
                     i.addr = client_addr;
                     i.addrlen = addrlen;
                     i.socket = udp_sock; // set FD before ARRIVED
-                    i.state = ClientInfo::State::ARRIVED;
+                    if (msg.type != msg_type::TYPE_3)
+                    {
+                        i.state = ClientInfo::State::INVALID;
+                        ts_print("Invalidated : ", i.ip, ":", i.port, "\n");
+                    }
+                    else
+                        i.state = ClientInfo::State::ARRIVED;
                     return 0; // do NOT close udp_sock here, FCFS will
                 }
             }
@@ -113,26 +120,32 @@ int udp_for_client(std::string ip, uint16_t udp_port)
     }
 }
 
-int udp_send_and_close(int udp_sock, const std::string& ack_msg,
-                       const sockaddr_in& client_addr, socklen_t addrlen) {
+int udp_send_and_close(int udp_sock, const std::string &ack_msg,
+                       const sockaddr_in &client_addr, socklen_t addrlen)
+{
     message ack{};
-    ack.set(msg_type::TYPE_4, ack_msg.c_str());      // <-- pass c_str + size
-    char buf[sizeof(int32_t)*2 + MSG_LEN];
+    ack.set(msg_type::TYPE_4, ack_msg.c_str()); // <-- pass c_str + size
+    char buf[sizeof(int32_t) * 2 + MSG_LEN];
     int n = ack.printToBuf(buf, sizeof(buf));
-    if (n < 0) return -1;
+    if (n < 0)
+        return -1;
 
     ssize_t sent = sendto(udp_sock, buf, n, 0,
-                          (const sockaddr*)&client_addr, addrlen);
-    if (sent < 0) { perror("sendto failed"); return -1; }
+                          (const sockaddr *)&client_addr, addrlen);
+    if (sent < 0)
+    {
+        perror("sendto failed");
+        return -1;
+    }
 
     close(udp_sock);
     return 0;
 }
 
-
 void fcfs()
 {
     size_t cur = 0;
+    char ip[INET6_ADDRSTRLEN];
     for (;;)
     {
         std::unique_lock<std::mutex> lock(clients_mtx);
@@ -140,12 +153,12 @@ void fcfs()
         {
             auto cli = clients[cur]; // copy the info you need
             lock.unlock();           // release lock while sending
-
+            inet_ntop(clients[cur].addr.sin_family, &(clients[cur].addr.sin_addr), ip, INET_ADDRSTRLEN);
+            ts_print("Servicing: ", ip, ":", clients[cur].port, "\n",clients[cur].msg.print(false), "\n");
             udp_send_and_close(cli.socket, ack_msg, cli.addr, cli.addrlen);
 
             lock.lock();
             clients[cur].state = ClientInfo::State::DONE;
-            ts_print(clients[cur].msg.print(false),"\n");
             ++cur;
         }
         else
@@ -156,7 +169,42 @@ void fcfs()
     }
 }
 
-void tcp_server(const char* PORT)
+void rr()
+{
+    size_t cur = 0;
+    char ip[INET6_ADDRSTRLEN];
+    for (;; cur = (cur + 1) % clients.size())
+    {
+        std::unique_lock<std::mutex> lock(clients_mtx);
+
+        if (clients.empty())
+        {
+            lock.unlock();
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            continue;
+        }
+
+        if (clients[cur].state == ClientInfo::State::ARRIVED)
+        {
+            auto cli = clients[cur]; // copy client info
+            lock.unlock();           // release lock before sending
+            inet_ntop(clients[cur].addr.sin_family, &(clients[cur].addr.sin_addr), ip, INET_ADDRSTRLEN);
+            ts_print("Servicing: ", ip, "\n",clients[cur].msg.print(false), "\n");
+            // simulate one "time quantum" (send once per turn)
+            udp_send_and_close(cli.socket, ack_msg, cli.addr, cli.addrlen);
+
+            lock.lock();
+            clients[cur].state = ClientInfo::State::DONE;
+        }
+        else
+        {
+            lock.unlock();
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+    }
+}
+
+void tcp_server(const char *PORT)
 {
     int sockfd, new_fd;
     addrinfo hints{}, *servinfo{}, *ptr{};
@@ -243,15 +291,24 @@ void tcp_server(const char* PORT)
     }
 }
 
-int main(int argc,char**argv)
+int main(int argc, char **argv)
 {
-    if(argc != 2){
-        cerr<<"USAGE: .\\server [PORT]\n";
+    if (argc < 2)
+    {
+        cerr << "USAGE: .\\server [PORT] [[rr]]\n";
         return 1;
     }
+    thread tcp_thread(tcp_server, argv[1]);
+    void (*scheduling_policy)(void) = fcfs;
+    if (argc == 3)
+    {
+        if (argv[2] == "rr")
+        {
+            scheduling_policy = rr;
+        }
+    }
     // thread udp_thread(udp_server);
-    thread tcp_thread(tcp_server,argv[1]);
-    thread fcfs_thread(fcfs);
+    thread fcfs_thread(scheduling_policy);
     // udp_thread.join();
     fcfs_thread.join();
     tcp_thread.join();

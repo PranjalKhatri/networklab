@@ -2,7 +2,8 @@
 #include <cstdint>
 #include <cstring>     // for memcpy
 #include <arpa/inet.h> // for htonl, ntohl
-#define MSG_LEN 150
+#include <chrono>
+#define MSG_LEN 15000
 using namespace std;
 enum class msg_type : int32_t
 {
@@ -16,7 +17,12 @@ struct message
     msg_type type;
     int32_t length;
     char message[MSG_LEN];
-    int set(msg_type tp, string_view msg)
+
+    // extra metadata (not serialized)
+    std::chrono::steady_clock::time_point send_time;
+    std::chrono::steady_clock::time_point arrive_time;
+
+    int set(msg_type tp, std::string_view msg)
     {
         int sz = msg.size();
         if (sz > MSG_LEN)
@@ -27,8 +33,12 @@ struct message
         {
             message[i] = msg[i];
         }
+
+        // record when this message was prepared for sending
+        send_time = std::chrono::steady_clock::now();
         return 0;
     }
+
     int printToBuf(char *buf, int sz) const
     {
         if (length > MSG_LEN)
@@ -40,15 +50,14 @@ struct message
             return -1; // not enough space
         }
 
-        // convert to network byte order
-        int32_t net_type = htonl(static_cast<underlying_type_t<msg_type>>(type));
+        int32_t net_type = htonl(static_cast<std::underlying_type_t<msg_type>>(type));
         int32_t net_len = htonl(length);
 
         memcpy(buf, &net_type, sizeof(net_type));
         memcpy(buf + sizeof(net_type), &net_len, sizeof(net_len));
         memcpy(buf + sizeof(net_type) + sizeof(net_len), message, length);
 
-        return req; // number of bytes written
+        return req;
     }
 
     int parseFromBuf(const char *buf, int sz)
@@ -59,7 +68,7 @@ struct message
         memcpy(&type, buf, sizeof(type));
         memcpy(&length, buf + sizeof(type), sizeof(length));
 
-        type = static_cast<msg_type>(ntohl(static_cast<underlying_type_t<msg_type>>(type)));
+        type = static_cast<msg_type>(ntohl(static_cast<std::underlying_type_t<msg_type>>(type)));
         length = ntohl(length);
 
         if (length > MSG_LEN || sz < (int)(sizeof(type) + sizeof(length) + length))
@@ -68,25 +77,28 @@ struct message
         }
 
         memcpy(message, buf + sizeof(type) + sizeof(length), length);
-        message[length] = '\0'; // null terminate for safety
+        message[length] = '\0';
+
+        // record when this message was received/parsed
+        arrive_time = std::chrono::steady_clock::now();
 
         return 0;
     }
 
-    string print(bool print = true)
+    std::string print(bool do_print = true) const
     {
+        std::string res = "[type=" + std::to_string((int)type) +
+                          ", length=" + std::to_string(length) +
+                          ", message=" + std::string(message, length) + "]";
 
-        string res = "[type=" + to_string((int)type) +
-                     ", length=" + to_string(length) +
-                     ", message=" + std::string(message, length) + "]";
-
-        if (print)
+        if (do_print)
         {
-            cout<<res;
+            std::cout << res;
         }
         return res;
     }
 };
+
 // ---- Handshake helpers ----
 
 // send a message over a TCP socket
