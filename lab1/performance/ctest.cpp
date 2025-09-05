@@ -13,7 +13,7 @@ int main()
         system(tmp.c_str());
         for (int i = 1; i <= 32; i++)
         {
-            std::string cmd = "./client udp 172.16.114.99 6969 1 " + std::to_string(i) + " >> rc"+std::to_string(j)+ ".txt";
+            std::string cmd = "./client tcp 172.16.114.99 6969 1 " + std::to_string(i) + " >> rc"+std::to_string(j)+ ".txt";
             std::cout << "Executing: " << cmd << std::endl;
 
             int ret = std::system(cmd.c_str());
