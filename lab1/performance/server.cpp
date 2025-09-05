@@ -79,8 +79,9 @@ void tcp_server(int port, size_t msg_size, size_t total_kb)
         close(server_fd);
         return;
     }
-
+#ifndef TXT
     std::cout << "[TCP] Waiting for connection on port " << port << "...\n";
+#endif
     int sock = accept(server_fd, nullptr, nullptr);
     if (sock < 0)
     {

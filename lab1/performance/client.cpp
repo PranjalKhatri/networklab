@@ -85,7 +85,7 @@ void run_tcp(const char *server_ip, int port, size_t total_kb)
     // ----- Upload -----
     auto start = now_ns();
     size_t sent = 0;
-    std::cout << "will send " << total_bytes << std::endl;
+    // std::cout << "will send " << total_bytes << std::endl;
     while (sent < total_bytes)
     {
         MessageHeader hdr{now_ns(), (uint32_t)msg_size};
