@@ -1,0 +1,16 @@
+
+udp
+[UDP] Upload throughput: 12174.5 KB/s
+[UDP] Download throughput: 5.58659e+06 KB/s
+udp
+[UDP] Upload throughput: 18553.2 KB/s
+[UDP] Download throughput: 316256 KB/s
+udp
+[UDP] Upload throughput: 34809.2 KB/s
+[UDP] Download throughput: 434720 KB/s
+udp
+[UDP] Upload throughput: 44912 KB/s
+[UDP] Download throughput: 428311 KB/s
+udp
+[UDP] Upload throughput: 47174.7 KB/s
+[UDP] Download throughput: 998203 KB/s

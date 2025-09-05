@@ -1,0 +1,97 @@
+
+udp
+[UDP] Upload throughput: 13178.4 KB/s
+[UDP] Download throughput: 4.54545e+06 KB/s
+udp
+[UDP] Upload throughput: 26170.5 KB/s
+[UDP] Download throughput: 437158 KB/s
+udp
+[UDP] Upload throughput: 32702.9 KB/s
+[UDP] Download throughput: 339751 KB/s
+udp
+[UDP] Upload throughput: 31263.9 KB/s
+[UDP] Download throughput: 309574 KB/s
+udp
+[UDP] Upload throughput: 35327 KB/s
+[UDP] Download throughput: 20300.8 KB/s
+udp
+[UDP] Upload throughput: 55326.1 KB/s
+[UDP] Download throughput: 222577 KB/s
+udp
+[UDP] Upload throughput: 63824.4 KB/s
+[UDP] Download throughput: 279642 KB/s
+udp
+[UDP] Upload throughput: 53389.6 KB/s
+[UDP] Download throughput: 131495 KB/s
+udp
+[UDP] Upload throughput: 53327 KB/s
+[UDP] Download throughput: 90690.2 KB/s
+udp
+[UDP] Upload throughput: 70563.2 KB/s
+[UDP] Download throughput: 134423 KB/s
+udp
+[UDP] Upload throughput: 83701.1 KB/s
+[UDP] Download throughput: 203617 KB/s
+udp
+[UDP] Upload throughput: 53517.4 KB/s
+[UDP] Download throughput: 145711 KB/s
+udp
+[UDP] Upload throughput: 76459.3 KB/s
+[UDP] Download throughput: 139632 KB/s
+udp
+[UDP] Upload throughput: 76294.3 KB/s
+[UDP] Download throughput: 199152 KB/s
+udp
+[UDP] Upload throughput: 94532.3 KB/s
+[UDP] Download throughput: 158929 KB/s
+udp
+[UDP] Upload throughput: 95310.1 KB/s
+[UDP] Download throughput: 169722 KB/s
+udp
+[UDP] Upload throughput: 88364 KB/s
+[UDP] Download throughput: 303788 KB/s
+udp
+[UDP] Upload throughput: 64151.5 KB/s
+[UDP] Download throughput: 113309 KB/s
+udp
+[UDP] Upload throughput: 87588.7 KB/s
+[UDP] Download throughput: 160313 KB/s
+udp
+[UDP] Upload throughput: 99770.5 KB/s
+[UDP] Download throughput: 152462 KB/s
+udp
+[UDP] Upload throughput: 154527 KB/s
+[UDP] Download throughput: 256623 KB/s
+udp
+[UDP] Upload throughput: 98652.9 KB/s
+[UDP] Download throughput: 121622 KB/s
+udp
+[UDP] Upload throughput: 97350 KB/s
+[UDP] Download throughput: 143926 KB/s
+udp
+[UDP] Upload throughput: 106895 KB/s
+[UDP] Download throughput: 234574 KB/s
+udp
+[UDP] Upload throughput: 96227.1 KB/s
+[UDP] Download throughput: 269673 KB/s
+udp
+[UDP] Upload throughput: 108139 KB/s
+[UDP] Download throughput: 353237 KB/s
+udp
+[UDP] Upload throughput: 105165 KB/s
+[UDP] Download throughput: 125431 KB/s
+udp
+[UDP] Upload throughput: 95116.4 KB/s
+[UDP] Download throughput: 151812 KB/s
+udp
+[UDP] Upload throughput: 68196.3 KB/s
+[UDP] Download throughput: 96072.3 KB/s
+udp
+[UDP] Upload throughput: 102208 KB/s
+[UDP] Download throughput: 150325 KB/s
+udp
+[UDP] Upload throughput: 200343 KB/s
+[UDP] Download throughput: 363897 KB/s
+udp
+[UDP] Upload throughput: 76850.8 KB/s
+[UDP] Download throughput: 130594 KB/s
