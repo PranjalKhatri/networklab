@@ -191,7 +191,7 @@ void run_udp(const char *server_ip, int port, size_t msg_size, size_t total_kb)
         if (hdr->payload_size == 0)
             break; // DONE
         if (first_recv == 0)
-            first_recv = hdr->send_time_ns;
+            first_recv = now_ns();
         last_recv = now_ns();
         received += hdr->payload_size;
     }

@@ -78,7 +78,8 @@ void tcp_server(int port, size_t msg_size, size_t total_kb)
         std::vector<char> payload(hdr.payload_size);
         if (recv_all(sock, payload.data(), hdr.payload_size) <= 0) break;
 
-        if (first_send_time == 0) first_send_time = hdr.send_time_ns;
+        if (first_send_time == 0) first_send_time = now_ns();
+        // if (first_send_time == 0) first_send_time = hdr.send_time_ns;
         last_arrival_time = now_ns();
         total_payload += hdr.payload_size;
     }
@@ -136,8 +137,8 @@ void udp_server(int port, size_t msg_size, size_t total_kb)
         
         MessageHeader *hdr = (MessageHeader *)buffer;
         if (hdr->payload_size == 0) break; // DONE
-
-        if (first_send_time == 0) first_send_time = hdr->send_time_ns;
+        if (first_send_time == 0) first_send_time = now_ns();
+        // if (first_send_time == 0) first_send_time = hdr->send_time_ns;
         last_arrival_time = now_ns();
         total_payload += hdr->payload_size;
     }
