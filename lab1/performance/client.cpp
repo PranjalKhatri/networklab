@@ -124,6 +124,7 @@ void run_tcp(const char *server_ip, int port, size_t msg_size, size_t total_kb)
         received += hdr.payload_size;
     }
     double dl_time = (last_recv - first_recv) / 1e9;
+    std::cout<<"client downloaded"<<received<<"\n";
     double dl_tp = (received / 1024.0) / dl_time;
     std::cout << "[TCP] Download throughput: " << dl_tp << " KB/s\n";
     close(sockfd);
