@@ -60,7 +60,7 @@ void run_tcp(const char *server_ip, int port, size_t msg_size, size_t total_kb)
         perror("socket");
         return;
     }
-    
+
     sockaddr_in servaddr{};
     servaddr.sin_family = AF_INET;
     servaddr.sin_port = htons(port);
@@ -70,18 +70,18 @@ void run_tcp(const char *server_ip, int port, size_t msg_size, size_t total_kb)
         close(sockfd);
         return;
     }
-    
+
     if (connect(sockfd, (sockaddr *)&servaddr, sizeof(servaddr)) < 0)
     {
         perror("connect");
         close(sockfd);
         return;
     }
-    
+
     size_t total_bytes = total_kb;
     std::vector<char> buffer(msg_size);
     memset(buffer.data(), 'A', msg_size);
-    
+
     // ----- Upload -----
     auto start = now_ns();
     size_t sent = 0;
@@ -102,7 +102,7 @@ void run_tcp(const char *server_ip, int port, size_t msg_size, size_t total_kb)
     auto end = now_ns();
     double upload_time = (end - start) / 1e9;
     double upload_tp = (total_bytes / 1024.0) / upload_time; // KB/s
-    std::cout << "[TCP] Upload throughput: " << upload_tp << " KB/s\n";
+    // std::cout << "[TCP] Upload throughput: " << upload_tp << " KB/s\n";
 
     // ----- Download -----
     size_t received = 0;
@@ -119,7 +119,7 @@ void run_tcp(const char *server_ip, int port, size_t msg_size, size_t total_kb)
         if (recv_all(sockfd, payload.data(), hdr.payload_size) <= 0)
             break;
         if (first_recv == 0)
-            first_recv = now_ns();
+            first_recv = hdr.send_time_ns;
         last_recv = now_ns();
         received += hdr.payload_size;
     }
@@ -190,7 +190,7 @@ void run_udp(const char *server_ip, int port, size_t msg_size, size_t total_kb)
         if (hdr->payload_size == 0)
             break; // DONE
         if (first_recv == 0)
-            first_recv = now_ns();
+            first_recv = hdr->send_time_ns;
         last_recv = now_ns();
         received += hdr->payload_size;
     }
@@ -221,12 +221,12 @@ int main(int argc, char *argv[])
     std::cin >> msg_size_kb;
     if (mode == "tcp")
     {
-        std::cout<<"tcp run"<<std::endl;
-        run_tcp(server_ip, port, msg_size_kb*1024, total_kb*1024);
+        std::cout << "tcp run" << std::endl;
+        run_tcp(server_ip, port, msg_size_kb * 1024, total_kb * 1024);
     }
     else if (mode == "udp")
     {
-        run_udp(server_ip, port, msg_size_kb*1024, total_kb*1024);
+        run_udp(server_ip, port, msg_size_kb * 1024, total_kb * 1024);
     }
     else
     {
