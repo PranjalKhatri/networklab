@@ -1,97 +1,33 @@
 
-udp
-[UDP] Upload throughput: 19253 KB/s
-[UDP] Download throughput: 2.27273e+07 KB/s
-udp
-[UDP] Upload throughput: 23356.6 KB/s
-[UDP] Download throughput: 221852 KB/s
-udp
-[UDP] Upload throughput: 50771.7 KB/s
-[UDP] Download throughput: 609508 KB/s
-udp
-[UDP] Upload throughput: 44479 KB/s
-[UDP] Download throughput: 457980 KB/s
-udp
-[UDP] Upload throughput: 47384.4 KB/s
-[UDP] Download throughput: 352014 KB/s
-udp
-[UDP] Upload throughput: 38442.1 KB/s
-[UDP] Download throughput: 373552 KB/s
-udp
-[UDP] Upload throughput: 60003.9 KB/s
-[UDP] Download throughput: 171720 KB/s
-udp
-[UDP] Upload throughput: 55495.4 KB/s
-[UDP] Download throughput: 354578 KB/s
-udp
-[UDP] Upload throughput: 66709.2 KB/s
-[UDP] Download throughput: 388098 KB/s
-udp
-[UDP] Upload throughput: 81783.5 KB/s
-[UDP] Download throughput: 495688 KB/s
-udp
-[UDP] Upload throughput: 79361.1 KB/s
-[UDP] Download throughput: 114565 KB/s
-udp
-[UDP] Upload throughput: 145472 KB/s
-[UDP] Download throughput: 378370 KB/s
-udp
-[UDP] Upload throughput: 56180.3 KB/s
-[UDP] Download throughput: 114262 KB/s
-udp
-[UDP] Upload throughput: 88318 KB/s
-[UDP] Download throughput: 154753 KB/s
-udp
-[UDP] Upload throughput: 76985.9 KB/s
-[UDP] Download throughput: 189072 KB/s
-udp
-[UDP] Upload throughput: 94219.6 KB/s
-[UDP] Download throughput: 153035 KB/s
-udp
-[UDP] Upload throughput: 95661.5 KB/s
-[UDP] Download throughput: 107210 KB/s
-udp
-[UDP] Upload throughput: 90153.7 KB/s
-[UDP] Download throughput: 167029 KB/s
-udp
-[UDP] Upload throughput: 91460.5 KB/s
-[UDP] Download throughput: 156380 KB/s
-udp
-[UDP] Upload throughput: 176114 KB/s
-[UDP] Download throughput: 346831 KB/s
-udp
-[UDP] Upload throughput: 69495 KB/s
-[UDP] Download throughput: 164501 KB/s
-udp
-[UDP] Upload throughput: 107172 KB/s
-[UDP] Download throughput: 415879 KB/s
-udp
-[UDP] Upload throughput: 95667.1 KB/s
-[UDP] Download throughput: 272502 KB/s
-udp
-[UDP] Upload throughput: 96346.8 KB/s
-[UDP] Download throughput: 144792 KB/s
-udp
-[UDP] Upload throughput: 101265 KB/s
-[UDP] Download throughput: 141419 KB/s
-udp
-[UDP] Upload throughput: 92371.2 KB/s
-[UDP] Download throughput: 127504 KB/s
-udp
-[UDP] Upload throughput: 75224.2 KB/s
-[UDP] Download throughput: 120885 KB/s
-udp
-[UDP] Upload throughput: 97728.9 KB/s
-[UDP] Download throughput: 146949 KB/s
-udp
-[UDP] Upload throughput: 104832 KB/s
-[UDP] Download throughput: 138365 KB/s
-udp
-[UDP] Upload throughput: 67129.3 KB/s
-[UDP] Download throughput: 110048 KB/s
-udp
-[UDP] Upload throughput: 106098 KB/s
-[UDP] Download throughput: 128879 KB/s
-udp
-[UDP] Upload throughput: 96834.1 KB/s
-[UDP] Download throughput: 254601 KB/s
+1 2.18818e+06
+2 305857
+3 310913
+4 431267
+5 134293
+6 346121
+7 114360
+8 122446
+9 313643
+10 158065
+11 354770
+12 401244
+13 128839
+14 145753
+15 130202
+16 150652
+17 345592
+18 361562
+19 160170
+20 395171
+21 163987
+22 152680
+23 141070
+24 385635
+25 468911
+26 106780
+27 140313
+28 143889
+29 141645
+30 105051
+31 125982
+32 131890
