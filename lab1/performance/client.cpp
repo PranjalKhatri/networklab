@@ -227,7 +227,7 @@ int main(int argc, char *argv[])
     // Prompt for message size
     if (mode == "tcp")
     {
-        std::cout << "tcp run" << std::endl;
+        // std::cout << "tcp run" << std::endl;
         run_tcp(server_ip, port, total_kb);
     }
     else if (mode == "udp")
