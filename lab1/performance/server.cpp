@@ -166,40 +166,42 @@ void udp_server(int port, size_t msg_size, size_t total_kb)
         close(sock);
         return;
     }
+#ifndef TXT
+    std::cout << "[UDP Server] Listening on port " << port << "...\n";
+#endif
+    char *buffer = new char[msg_size + sizeof(MessageHeader)];
     socklen_t clen = sizeof(client);
 
-    char *buffer = new char[msg_size + sizeof(MessageHeader)];
     uint64_t first_send_time = 0, last_arrival_time = 0;
     size_t total_payload = 0;
 
-    // ---- Receive upload ----
+    // ---- Receive upload phase ----
     while (true)
     {
         ssize_t n = recvfrom(sock, buffer, msg_size + sizeof(MessageHeader), 0,
                              (sockaddr *)&client, &clen);
         if (n <= 0)
-            break;
+            continue; // ignore errors
 
         MessageHeader *hdr = (MessageHeader *)buffer;
         if (hdr->payload_size == 0)
-            break; // DONE
+            break; // DONE from client
+
         if (first_send_time == 0)
             first_send_time = now_ns();
-        // if (first_send_time == 0) first_send_time = hdr->send_time_ns;
         last_arrival_time = now_ns();
         total_payload += hdr->payload_size;
     }
 
     double dur = (last_arrival_time - first_send_time) / 1e9;
-#ifdef TXT
-    std::cout << total_payload / 1024.0 << " " << (total_payload / 1024.0) / dur << "\n";
-#else
+    #ifndef TXT
     std::cout << "[UDP] Upload: " << total_payload / 1024.0
               << " KB in " << dur << "s => "
               << (total_payload / 1024.0) / dur << " KB/s\n";
-#endif
-
-    // ---- Send download ----
+    #else 
+    std::cout<<total_payload/1024.0<<" "<<(total_payload / 1024.0) / dur<<"\n";
+    #endif 
+    // ---- Send download phase ----
     size_t total_bytes = total_kb * 1024;
     size_t sent = 0;
     while (sent < total_bytes)
@@ -214,7 +216,9 @@ void udp_server(int port, size_t msg_size, size_t total_kb)
     // send DONE
     MessageHeader done{now_ns(), 0};
     sendto(sock, &done, sizeof(done), 0, (sockaddr *)&client, clen);
-
+#ifndef TXT
+    std::cout << "[UDP] Finished session with client.\n";
+#endif
     close(sock);
     delete[] buffer;
 }

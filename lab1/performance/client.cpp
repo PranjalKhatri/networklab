@@ -144,6 +144,12 @@ void run_udp(const char *server_ip, int port, size_t total_kb)
         return;
     }
 
+    // recv timeout (avoid infinite blocking)
+    struct timeval tv;
+    tv.tv_sec = 3;
+    tv.tv_usec = 0;
+    setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+
     sockaddr_in servaddr{};
     servaddr.sin_family = AF_INET;
     servaddr.sin_port = htons(port);
@@ -177,6 +183,7 @@ void run_udp(const char *server_ip, int port, size_t total_kb)
     auto end = now_ns();
     double upload_time = (end - start) / 1e9;
     double upload_tp = (total_bytes / 1024.0) / upload_time;
+
     // std::cout << "[UDP] Upload throughput: " << upload_tp << " KB/s\n";
 
     // ----- Download -----
@@ -191,6 +198,7 @@ void run_udp(const char *server_ip, int port, size_t total_kb)
                              (sockaddr *)&fromaddr, &fromlen);
         if (n <= 0)
             break;
+
         MessageHeader *hdr = (MessageHeader *)recvbuf.data();
         if (hdr->payload_size == 0)
             break; // DONE
@@ -201,14 +209,13 @@ void run_udp(const char *server_ip, int port, size_t total_kb)
     }
     double dl_time = (last_recv - first_recv) / 1e9;
     double dl_tp = (received / 1024.0) / dl_time;
-#ifdef TXT
-    std::cout << received / 1024.0 << " " << dl_tp << "\n";
-#else
+#ifndef TXT
     std::cout << "[UDP] Download throughput: " << dl_tp << " KB/s\n";
+#else
+    std::cout << received / 1024.0 << " " << dl_tp << "\n";
 #endif
     close(sockfd);
 }
-
 // ---------- Main ----------
 int main(int argc, char *argv[])
 {
@@ -232,6 +239,7 @@ int main(int argc, char *argv[])
     }
     else if (mode == "udp")
     {
+        // std::cout<<"udp\n";
         run_udp(server_ip, port, total_kb);
     }
     else
