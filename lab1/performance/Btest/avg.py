@@ -2,7 +2,7 @@ import glob
 
 def main():
     # all input files
-    files = [f"out_rs{i}.txt" for i in range(1, 11)]
+    files = [f"out_rc{i}.txt" for i in range(1, 11)]
     
     data = {}  # key = index, value = list of numbers
 
@@ -16,7 +16,7 @@ def main():
                 data.setdefault(idx, []).append(val)
 
     # compute averages
-    with open("rs.txt", "w") as out:
+    with open("rc.txt", "w") as out:
         for idx in sorted(data.keys()):
             vals = data[idx]
             avg = sum(vals) / len(vals)

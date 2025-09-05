@@ -13,7 +13,7 @@ int main()
         system(tmp.c_str());
         for (int i = 1; i <= 10; i++)
         {
-            std::string cmd = "./client tcp 172.16.114.99 6969 "+std::to_string(1<<(i-1))+" " + std::to_string(1024) + " >> rc"+std::to_string(j)+ ".txt";
+            std::string cmd = "./client tcp 172.16.114.99 6969 "+std::to_string(1<<(i-1))+" " + std::to_string(1024*10) + " >> rc"+std::to_string(j)+ ".txt";
             std::cout << "Executing: " << cmd << std::endl;
 
             int ret = std::system(cmd.c_str());

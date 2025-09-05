@@ -10,7 +10,7 @@ int main()
         system(tmp.c_str());
         for (int i = 1; i <= 10; i++)
         {
-            std::string cmd = "./server tcp 6969 "+std::to_string(1<<(i-1))+" " + std::to_string(1024) + " >> rs"+std::to_string(j)+ ".txt";
+            std::string cmd = "./server tcp 6969 "+std::to_string(1<<(i-1))+" " + std::to_string(1024*10) + " >> rs"+std::to_string(j)+ ".txt";
             std::cout << "Executing: " << cmd << std::endl;
             int ret = std::system(cmd.c_str());
             if (ret != 0)

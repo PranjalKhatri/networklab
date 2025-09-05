@@ -2,8 +2,8 @@ import os
 
 # Range of files
 for i in range(1, 11):  # rc1.txt to rc10.txt
-    input_file = f"rs{i}.txt"
-    output_file = f"out_rs{i}.txt"  # change to input_file if you want overwrite
+    input_file = f"rc{i}.txt"
+    output_file = f"out_rc{i}.txt"  # change to input_file if you want overwrite
 
     if not os.path.exists(input_file):
         print(f"Skipping {input_file}, not found.")
