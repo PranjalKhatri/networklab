@@ -124,9 +124,13 @@ void run_tcp(const char *server_ip, int port, size_t total_kb)
         received += hdr.payload_size;
     }
     double dl_time = (last_recv - first_recv) / 1e9;
-    std::cout << "client downloaded" << received << "\n";
+    // std::cout << "client downloaded" << received << "\n";
     double dl_tp = (received / 1024.0) / dl_time;
+#ifdef TXT
+    std::cout << received / 1024.0 << " " << dl_tp << "\n";
+#else
     std::cout << "[TCP] Download throughput: " << dl_tp << " KB/s\n";
+#endif
     close(sockfd);
 }
 
@@ -197,7 +201,11 @@ void run_udp(const char *server_ip, int port, size_t total_kb)
     }
     double dl_time = (last_recv - first_recv) / 1e9;
     double dl_tp = (received / 1024.0) / dl_time;
+#ifdef TXT
+    std::cout << received / 1024.0 << " " << dl_tp << "\n";
+#else
     std::cout << "[UDP] Download throughput: " << dl_tp << " KB/s\n";
+#endif
     close(sockfd);
 }
 
@@ -217,9 +225,6 @@ int main(int argc, char *argv[])
     size_t total_kb = std::stoul(argv[5]);
     msg_size = std::stoul(argv[4]) * 1024;
     // Prompt for message size
-    std::cout << "Enter message size (KB): ";
-    size_t msg_size_kb;
-    std::cin >> msg_size_kb;
     if (mode == "tcp")
     {
         std::cout << "tcp run" << std::endl;
