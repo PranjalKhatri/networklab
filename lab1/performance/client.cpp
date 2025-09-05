@@ -50,9 +50,9 @@ ssize_t recv_all(int sock, char *buffer, size_t len)
     }
     return total_received;
 }
-
+size_t msg_size;
 // ---------- TCP Client ----------
-void run_tcp(const char *server_ip, int port, size_t msg_size, size_t total_kb)
+void run_tcp(const char *server_ip, int port, size_t total_kb)
 {
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0)
@@ -78,7 +78,7 @@ void run_tcp(const char *server_ip, int port, size_t msg_size, size_t total_kb)
         return;
     }
 
-    size_t total_bytes = total_kb*1024;
+    size_t total_bytes = total_kb * 1024;
     std::vector<char> buffer(msg_size);
     memset(buffer.data(), 'A', msg_size);
 
@@ -124,14 +124,14 @@ void run_tcp(const char *server_ip, int port, size_t msg_size, size_t total_kb)
         received += hdr.payload_size;
     }
     double dl_time = (last_recv - first_recv) / 1e9;
-    std::cout<<"client downloaded"<<received<<"\n";
+    std::cout << "client downloaded" << received << "\n";
     double dl_tp = (received / 1024.0) / dl_time;
     std::cout << "[TCP] Download throughput: " << dl_tp << " KB/s\n";
     close(sockfd);
 }
 
 // ---------- UDP Client ----------
-void run_udp(const char *server_ip, int port, size_t msg_size, size_t total_kb)
+void run_udp(const char *server_ip, int port, size_t total_kb)
 {
     int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
     if (sockfd < 0)
@@ -204,18 +204,18 @@ void run_udp(const char *server_ip, int port, size_t msg_size, size_t total_kb)
 // ---------- Main ----------
 int main(int argc, char *argv[])
 {
-    if (argc < 4)
+    if (argc < 5)
     {
         std::cerr << "Usage: " << argv[0]
-                  << " <tcp|udp> <server_ip> <port> <total_kb>\n";
+                  << " <tcp|udp> <server_ip> <port> <msg_sz> <total_kb>\n";
         return 1;
     }
 
     std::string mode = argv[1];
     const char *server_ip = argv[2];
     int port = std::stoi(argv[3]);
-    size_t total_kb = std::stoul(argv[4]);
-
+    size_t total_kb = std::stoul(argv[5]);
+    msg_size = std::stoul(argv[4]) * 1024;
     // Prompt for message size
     std::cout << "Enter message size (KB): ";
     size_t msg_size_kb;
@@ -223,11 +223,11 @@ int main(int argc, char *argv[])
     if (mode == "tcp")
     {
         std::cout << "tcp run" << std::endl;
-        run_tcp(server_ip, port, msg_size_kb * 1024, total_kb );
+        run_tcp(server_ip, port, total_kb);
     }
     else if (mode == "udp")
     {
-        run_udp(server_ip, port, msg_size_kb * 1024, total_kb );
+        run_udp(server_ip, port, total_kb);
     }
     else
     {
