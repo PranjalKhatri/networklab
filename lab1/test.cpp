@@ -46,7 +46,7 @@ void showip(const std::string& host, const std::string& service) {
     freeaddrinfo(addr);
 }
 
-int main() {
-    showip("www.google.com", "http");
+int main(int argc,char**argv) {
+    showip(argv[1], "http");
     return 0;
 }

@@ -33,6 +33,7 @@ struct ClientInfo
 vector<ClientInfo> clients;
 mutex clients_mtx;
 
+constexpr int timeout = 100000;
 std::mutex print_mutex;
 string ack_msg = "ACK FROM SERVER!!";
 template <typename... Args>
@@ -141,30 +142,43 @@ int udp_send_and_close(int udp_sock, const std::string &ack_msg,
     close(udp_sock);
     return 0;
 }
-
 void fcfs()
 {
     size_t cur = 0;
     char ip[INET6_ADDRSTRLEN];
+    int wait_cnt = 0;
+    int slptime = 10;
     for (;;)
     {
         std::unique_lock<std::mutex> lock(clients_mtx);
-        if (cur < clients.size() && clients[cur].state == ClientInfo::State::ARRIVED)
+        if (cur == clients.size())
+        {
+            lock.unlock();
+            std::this_thread::sleep_for(std::chrono::milliseconds(10)); // tiny backoff
+        }
+        else if (cur < clients.size() && clients[cur].state == ClientInfo::State::ARRIVED)
         {
             auto cli = clients[cur]; // copy the info you need
             lock.unlock();           // release lock while sending
             inet_ntop(clients[cur].addr.sin_family, &(clients[cur].addr.sin_addr), ip, INET_ADDRSTRLEN);
-            ts_print("Servicing: ", ip, ":", clients[cur].port, "\n",clients[cur].msg.print(false), "\n");
+            ts_print("Servicing: ", ip, ":", clients[cur].port, "\n", clients[cur].msg.print(false), "\n");
             udp_send_and_close(cli.socket, ack_msg, cli.addr, cli.addrlen);
 
             lock.lock();
             clients[cur].state = ClientInfo::State::DONE;
             ++cur;
+            wait_cnt = 0;
         }
         else
         {
+            wait_cnt += slptime;
+            if (wait_cnt >= timeout)
+            {
+                cur++;
+                wait_cnt = 0;
+            }
             lock.unlock();
-            std::this_thread::sleep_for(std::chrono::milliseconds(10)); // tiny backoff
+            std::this_thread::sleep_for(std::chrono::milliseconds(slptime)); // tiny backoff
         }
     }
 }
@@ -189,7 +203,7 @@ void rr()
             auto cli = clients[cur]; // copy client info
             lock.unlock();           // release lock before sending
             inet_ntop(clients[cur].addr.sin_family, &(clients[cur].addr.sin_addr), ip, INET_ADDRSTRLEN);
-            ts_print("Servicing: ", ip, "\n",clients[cur].msg.print(false), "\n");
+            ts_print("Servicing: ", ip, "\n", clients[cur].msg.print(false), "\n");
             // simulate one "time quantum" (send once per turn)
             udp_send_and_close(cli.socket, ack_msg, cli.addr, cli.addrlen);
 
