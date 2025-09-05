@@ -78,7 +78,7 @@ void run_tcp(const char *server_ip, int port, size_t msg_size, size_t total_kb)
         return;
     }
 
-    size_t total_bytes = total_kb;
+    size_t total_bytes = total_kb*1024;
     std::vector<char> buffer(msg_size);
     memset(buffer.data(), 'A', msg_size);
 
@@ -119,7 +119,7 @@ void run_tcp(const char *server_ip, int port, size_t msg_size, size_t total_kb)
         if (recv_all(sockfd, payload.data(), hdr.payload_size) <= 0)
             break;
         if (first_recv == 0)
-            first_recv = hdr.send_time_ns;
+            first_recv = now_ns();
         last_recv = now_ns();
         received += hdr.payload_size;
     }
@@ -223,11 +223,11 @@ int main(int argc, char *argv[])
     if (mode == "tcp")
     {
         std::cout << "tcp run" << std::endl;
-        run_tcp(server_ip, port, msg_size_kb * 1024, total_kb * 1024);
+        run_tcp(server_ip, port, msg_size_kb * 1024, total_kb );
     }
     else if (mode == "udp")
     {
-        run_udp(server_ip, port, msg_size_kb * 1024, total_kb * 1024);
+        run_udp(server_ip, port, msg_size_kb * 1024, total_kb );
     }
     else
     {
